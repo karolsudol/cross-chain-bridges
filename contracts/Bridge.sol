@@ -11,29 +11,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./TokenERC20.sol";
 
-interface IBridge {
-    function deposit(
-        uint256 chainId,
-        address depositToken,
-        uint256 amount,
-        address receiver
-    ) external;
-
-    function withdraw(
-        address token,
-        address receiver,
-        uint256 amount,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external;
-
-    function validator() external view returns (address);
-
-    // only called by an admin
-    function setChain(uint256 chainId) external;
-}
-
 contract Bridge is Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
 
