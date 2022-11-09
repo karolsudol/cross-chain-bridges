@@ -4,18 +4,15 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 
 describe("Bridge", function () {
-  // We define a fixture to reuse the same setup in every test.
-  // We use loadFixture to run this setup once, snapshot that state,
-  // and reset Hardhat Network to that snapshot in every test.
   async function deploy() {
-    const [owner, validator, acc1, acc2] = await ethers.getSigners();
-    const Token = await ethers.getContractFactory("TokenERC20");
-    const tokenETH = await Token.deploy();
-    const tokenBSC = await Token.deploy();
-
     const chainID_ETH = 4;
     const chainID_BSC = 56;
     const symbol = "TKN";
+
+    const [owner, validator, acc1, acc2] = await ethers.getSigners();
+    const Token = await ethers.getContractFactory("TokenERC20");
+    const tokenETH = await Token.deploy("tokenETH", symbol);
+    const tokenBSC = await Token.deploy("tokenBSC", symbol);
 
     const Bridge = await ethers.getContractFactory("Bridge");
     const bridgeETH = await Bridge.deploy(
@@ -29,6 +26,10 @@ describe("Bridge", function () {
       tokenBSC.address,
       chainID_ETH
     );
+
+    const role = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
+    await tokenETH.grantRole(role, bridgeETH.address);
+    await tokenBSC.grantRole(role, bridgeBSC.address);
 
     return {
       owner,
@@ -61,21 +62,23 @@ describe("Bridge", function () {
         symbol,
       } = await loadFixture(deploy);
 
-      await expect(
-        tokenETH.connect(acc1).mint(acc1.address, 100)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      tokenETH.connect(bridgeETH.address).mint(acc1.address, 100);
 
-      tokenETH.mint(acc1.address, 100);
+      // await expect(
+      //   tokenETH.connect(acc1).mint(acc1.address, 100)
+      // ).to.be.revertedWith("AccessControl");
 
-      await expect(
-        tokenETH.connect(acc1).burn(acc1.address, 100)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      // tokenETH.mint(acc1.address, 100);
 
-      const tx1 = bridgeETH
-        .connect(acc1)
-        .swap(acc1.address, 100, 0, chainID_BSC, symbol);
+      // await expect(
+      //   tokenETH.connect(acc1).burn(acc1.address, 100)
+      // ).to.be.revertedWith("Ownable: caller is not the owner");
 
-      await expect(tx1).to.be.revertedWith("This token is not allowed");
+      // const tx1 = bridgeETH
+      //   .connect(acc1)
+      //   .swap(acc1.address, 100, 0, chainID_BSC, symbol);
+
+      // await expect(tx1).to.be.revertedWith("This token is not allowed");
     });
 
     it("Should set the right owner", async function () {});
