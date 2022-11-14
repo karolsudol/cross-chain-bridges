@@ -27,6 +27,12 @@ describe("Bridge", function () {
       chainID_ETH
     );
 
+    await tokenETH.grantRole(tokenETH.ADMIN_ROLE(), bridgeETH.address);
+    await tokenBSC.grantRole(tokenBSC.ADMIN_ROLE(), tokenBSC.address);
+
+    await tokenETH.updateAdmin(bridgeETH.address);
+    await tokenBSC.updateAdmin(bridgeBSC.address);
+
     return {
       owner,
       validator,
@@ -61,15 +67,11 @@ describe("Bridge", function () {
       // console.log(bridgeETH.address);
       // console.log(owner.address);
 
-      // await tokenBSC.updateAdmin(bridgeBSC.address);
-
       expect(await tokenETH.balanceOf(acc1.address)).to.equal(0);
       tokenETH.mint(acc1.address, 1000);
       expect(await tokenETH.balanceOf(acc1.address)).to.equal(1000);
 
       // tokenETH.connect(acc1).approve(bridgeETH.address, 1000);
-
-      // await tokenETH.updateAdmin(bridgeETH.address);
 
       expect(
         await bridgeETH
