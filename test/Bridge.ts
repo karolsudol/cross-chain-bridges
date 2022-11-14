@@ -64,8 +64,8 @@ describe("Bridge", function () {
         symbol,
       } = await loadFixture(deploy);
 
-      // console.log(bridgeETH.address);
-      // console.log(owner.address);
+      console.log(bridgeETH.address);
+      console.log(owner.address);
 
       expect(await tokenETH.balanceOf(acc1.address)).to.equal(0);
       tokenETH.mint(acc1.address, 1000);
