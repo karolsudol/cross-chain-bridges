@@ -27,8 +27,8 @@ describe("Bridge", function () {
       chainID_ETH
     );
 
-    await tokenETH.grantRole(tokenETH.ADMIN_ROLE(), bridgeETH.address);
-    await tokenBSC.grantRole(tokenBSC.ADMIN_ROLE(), tokenBSC.address);
+    // await tokenETH.grantRole(tokenETH.ADMIN_ROLE(), bridgeETH.address);
+    // await tokenBSC.grantRole(tokenBSC.ADMIN_ROLE(), tokenBSC.address);
 
     await tokenETH.updateAdmin(bridgeETH.address);
     await tokenBSC.updateAdmin(bridgeBSC.address);
