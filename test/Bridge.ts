@@ -27,10 +27,6 @@ describe("Bridge", function () {
       chainID_ETH
     );
 
-    const role = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
-    await tokenETH.grantRole(role, bridgeETH.address);
-    await tokenBSC.grantRole(role, bridgeBSC.address);
-
     return {
       owner,
       validator,
@@ -47,7 +43,7 @@ describe("Bridge", function () {
   }
 
   describe("swap", function () {
-    it("Should revert swapping correctly", async function () {
+    it.only("Should swap and redeem correctly", async function () {
       const {
         owner,
         validator,
@@ -62,29 +58,30 @@ describe("Bridge", function () {
         symbol,
       } = await loadFixture(deploy);
 
-      tokenETH.connect(bridgeETH.address).mint(acc1.address, 100);
+      // console.log(bridgeETH.address);
+      // console.log(owner.address);
 
-      // await expect(
-      //   tokenETH.connect(acc1).mint(acc1.address, 100)
-      // ).to.be.revertedWith("AccessControl");
+      // await tokenBSC.updateAdmin(bridgeBSC.address);
 
-      // tokenETH.mint(acc1.address, 100);
+      expect(await tokenETH.balanceOf(acc1.address)).to.equal(0);
+      tokenETH.mint(acc1.address, 1000);
+      expect(await tokenETH.balanceOf(acc1.address)).to.equal(1000);
 
-      // await expect(
-      //   tokenETH.connect(acc1).burn(acc1.address, 100)
-      // ).to.be.revertedWith("Ownable: caller is not the owner");
+      // tokenETH.connect(acc1).approve(bridgeETH.address, 1000);
 
-      // const tx1 = bridgeETH
-      //   .connect(acc1)
-      //   .swap(acc1.address, 100, 0, chainID_BSC, symbol);
+      // await tokenETH.updateAdmin(bridgeETH.address);
 
-      // await expect(tx1).to.be.revertedWith("This token is not allowed");
+      expect(
+        await bridgeETH
+          .connect(acc1)
+          .swap(acc2.address, 500, 0, chainID_BSC, symbol)
+      )
+        .to.emit(bridgeETH, "SwapInitialized")
+        .withArgs(acc1.address, acc2.address, 500, 0, chainID_BSC, symbol);
+
+      expect(await tokenETH.balanceOf(acc1.address)).to.be.equal(500);
     });
 
-    it("Should set the right owner", async function () {});
-
-    it("Should receive and store the funds to lock", async function () {});
-
-    it("Should fail if the unlockTime is not in the future", async function () {});
+    it("Should revenrt swap and redeem correctly", async function () {});
   });
 });
