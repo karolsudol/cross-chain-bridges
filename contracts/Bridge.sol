@@ -31,6 +31,15 @@ contract Bridge is Ownable, ReentrancyGuard {
         string symbol
     );
 
+    event RedeemInitialized(
+        address from,
+        address to,
+        uint256 amount,
+        uint256 nonce,
+        uint256 chainId,
+        string symbol
+    );
+
     constructor(
         address _validator,
         address _token,
@@ -85,6 +94,15 @@ contract Bridge is Ownable, ReentrancyGuard {
         signatures[signature] = true;
 
         TokenERC20(token).mint(to, amount);
+
+        emit RedeemInitialized(
+            msg.sender,
+            to,
+            amount,
+            nonce,
+            chainID,
+            tokenSymbol
+        );
     }
 
     function _verify(
