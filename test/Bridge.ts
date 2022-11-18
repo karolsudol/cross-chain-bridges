@@ -79,6 +79,10 @@ describe("Bridge", function () {
       await tokenETH.connect(owner).mint(acc1.address, 1000);
       expect(await tokenETH.balanceOf(acc1.address)).to.equal(1000);
 
+      await expect(
+        bridgeETH.connect(acc1).swap(acc2.address, 500, 0, chainID_BSC, symbol)
+      ).to.be.revertedWith("Caller is not a burner");
+
       await tokenETH.connect(owner).grantRole(roleBurner, bridgeETH.address);
 
       expect(
@@ -122,7 +126,7 @@ describe("Bridge", function () {
       expect(await tokenBSC.balanceOf(acc2.address)).to.equal(500);
     });
 
-    it.only("Should revert swap and redeem correctly", async function () {
+    it("Should revert swap and redeem correctly", async function () {
       const {
         owner,
         validator,
@@ -139,24 +143,23 @@ describe("Bridge", function () {
         roleMinter,
       } = await loadFixture(deploy);
 
-      // console.log(bridgeETH.address);
-      // console.log(owner.address);
-
       expect(await tokenETH.balanceOf(acc1.address)).to.equal(0);
 
       await tokenETH.connect(owner).mint(acc1.address, 1000);
 
-      await tokenETH.connect(owner).grantRole(roleBurner, bridgeETH.address);
+      await tokenETH.connect(owner).grantRole(roleMinter, bridgeETH.address);
 
       await expect(
-        await bridgeETH
+        bridgeETH
           .connect(acc1)
-          .swap(acc2.address, 500, 0, chainID_BSC, "falsSymbol")
+          .swap(acc2.address, 500, 0, chainID_BSC, "falseSymbol")
       ).to.be.revertedWith("non supported erc20 token");
 
       await expect(
         bridgeETH.connect(acc1).swap(acc2.address, 500, 0, 6666666666, symbol)
       ).to.be.revertedWith("non supported chain");
+
+      await tokenETH.connect(owner).grantRole(roleBurner, bridgeETH.address);
 
       await bridgeETH
         .connect(acc1)
@@ -164,14 +167,44 @@ describe("Bridge", function () {
 
       let messageHashFalse = ethers.utils.solidityKeccak256(
         ["address", "address", "uint256", "uint256", "uint256", "string"],
-        [acc1.address, acc2.address, 500, 0, chainID_ETH, symbol]
+        [acc2.address, acc1.address, 1111500, 0, chainID_ETH, symbol]
       );
 
       const messageArrayFalse = ethers.utils.arrayify(messageHashFalse);
       const rawSignatureFalse = await validator.signMessage(messageArrayFalse);
 
-      expect(
-        await bridgeBSC
+      let messageHash = ethers.utils.solidityKeccak256(
+        ["address", "address", "uint256", "uint256", "uint256", "string"],
+        [acc1.address, acc2.address, 500, 0, chainID_ETH, symbol]
+      );
+
+      const messageArray = ethers.utils.arrayify(messageHash);
+      const rawSignature = await validator.signMessage(messageArray);
+
+      await tokenBSC.connect(owner).grantRole(roleBurner, bridgeBSC.address);
+
+      await expect(
+        bridgeBSC
+          .connect(acc1)
+          .redeem(
+            acc1.address,
+            acc2.address,
+            500,
+            0,
+            chainID_ETH,
+            symbol,
+            rawSignature
+          )
+      ).to.be.revertedWith("Caller is not a minter");
+
+      // await tokenBSC.connect(owner).grantRole(roleMinter, bridgeBSC.address);
+      // await tokenBSC.connect(owner).revokeRole(roleBurner, bridgeBSC.address);
+
+      await tokenBSC.connect(owner).grantRole(roleMinter, bridgeBSC.address);
+      await tokenBSC.connect(owner).grantRole(roleBurner, bridgeBSC.address);
+
+      await expect(
+        bridgeBSC
           .connect(acc1)
           .redeem(
             acc1.address,
@@ -184,20 +217,12 @@ describe("Bridge", function () {
           )
       ).be.be.revertedWith("invalid signature");
 
-      let messageHash = ethers.utils.solidityKeccak256(
-        ["address", "address", "uint256", "uint256", "uint256", "string"],
-        [acc1.address, acc2.address, 500, 0, chainID_ETH, symbol]
-      );
+      await tokenBSC.connect(owner).grantRole(roleMinter, bridgeBSC.address);
 
       await tokenBSC.connect(owner).grantRole(roleMinter, bridgeBSC.address);
 
-      const messageArray = ethers.utils.arrayify(messageHash);
-      const rawSignature = await validator.signMessage(messageArray);
-
-      await tokenBSC.connect(owner).grantRole(roleMinter, bridgeBSC.address);
-
-      expect(
-        await bridgeBSC
+      await expect(
+        bridgeBSC
           .connect(acc1)
           .redeem(
             acc1.address,
@@ -210,8 +235,8 @@ describe("Bridge", function () {
           )
       ).be.be.revertedWith("non supported erc20 token");
 
-      expect(
-        await bridgeBSC
+      await expect(
+        bridgeBSC
           .connect(acc1)
           .redeem(
             acc1.address,
@@ -238,8 +263,8 @@ describe("Bridge", function () {
           rawSignature
         );
 
-      expect(
-        await bridgeBSC
+      await expect(
+        bridgeBSC
           .connect(acc1)
           .redeem(
             acc1.address,
@@ -248,9 +273,9 @@ describe("Bridge", function () {
             0,
             chainID_ETH,
             symbol,
-            rawSignatureFalse
+            rawSignature
           )
-      ).be.be.revertedWith("no reentrancy");
+      ).be.be.revertedWith("no re-entrance");
     });
   });
 });

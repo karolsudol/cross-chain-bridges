@@ -10,19 +10,11 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./TokenERC20.sol";
-import "hardhat/console.sol";
+
+// import "hardhat/console.sol";
 
 contract Bridge is Ownable, ReentrancyGuard {
-    using ECDSA for bytes32;
-
-    address private validator;
-
-    uint256 public chainID;
-    address token;
-    string tokenSymbol;
-    mapping(string => bool) public tokenSymbols;
-    mapping(bytes => bool) public signatures;
-
+    /* ======================= Events ======================= */
     event SwapInitialized(
         address from,
         address to,
@@ -41,6 +33,16 @@ contract Bridge is Ownable, ReentrancyGuard {
         string symbol
     );
 
+    /* ======================= STATE VARS ======================= */
+    using ECDSA for bytes32;
+
+    address immutable validator;
+    uint256 immutable chainID;
+    address immutable token;
+
+    mapping(address => bytes) public signatures;
+
+    /* ======================= CONSTRUCTOR ======================= */
     constructor(
         address _validator,
         address _token,
@@ -49,9 +51,9 @@ contract Bridge is Ownable, ReentrancyGuard {
         validator = _validator;
         chainID = _chainID;
         token = _token;
-        tokenSymbol = TokenERC20(_token).symbol();
-        tokenSymbols[tokenSymbol] = true;
     }
+
+    /* ======================= EXTERNAL FUNCTIONS ======================= */
 
     function swap(
         address _to,
@@ -60,9 +62,12 @@ contract Bridge is Ownable, ReentrancyGuard {
         uint256 _chainID,
         string memory _tokenSymbol
     ) external {
-        console.log(tokenSymbols[tokenSymbol]);
-
-        require(tokenSymbols[tokenSymbol], "non supported erc20 token");
+        // string memory tokenSymbol_ = tokenSymbol;
+        require(
+            keccak256(abi.encodePacked(TokenERC20(token).symbol())) ==
+                keccak256(abi.encodePacked(_tokenSymbol)),
+            "non supported erc20 token"
+        );
         require(chainID == _chainID, "non supported chain");
 
         TokenERC20(token).burn(msg.sender, _amount);
@@ -83,18 +88,28 @@ contract Bridge is Ownable, ReentrancyGuard {
         uint256 amount,
         uint256 nonce,
         uint256 _chainID,
-        string memory _symbol,
-        bytes calldata signature
+        string memory _tokenSymbol,
+        bytes calldata _signature
     ) external {
-        require(tokenSymbols[tokenSymbol] == true, "non supported erc20 token");
+        bytes memory signature = signatures[msg.sender];
+
+        require(
+            keccak256(abi.encodePacked(TokenERC20(token).symbol())) ==
+                keccak256(abi.encodePacked(_tokenSymbol)),
+            "non supported erc20 token"
+        );
         require(chainID == _chainID, "non supported chain");
-        require(!signatures[signature], "no reentrancy");
+        require(
+            keccak256(abi.encodePacked(signature)) !=
+                keccak256(abi.encodePacked(_signature)),
+            "no re-entrance"
+        );
 
         bytes32 message = keccak256(
-            abi.encodePacked(from, to, amount, nonce, _chainID, _symbol)
+            abi.encodePacked(from, to, amount, nonce, _chainID, _tokenSymbol)
         );
-        require(_verify(message, signature, validator), "invalid signature");
-        signatures[signature] = true;
+        require(_verify(message, _signature, validator), "invalid signature");
+        signatures[msg.sender] = _signature;
 
         TokenERC20(token).mint(to, amount);
 
@@ -103,8 +118,8 @@ contract Bridge is Ownable, ReentrancyGuard {
             to,
             amount,
             nonce,
-            chainID,
-            tokenSymbol
+            _chainID,
+            _tokenSymbol
         );
     }
 

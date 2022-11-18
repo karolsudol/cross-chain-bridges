@@ -24,32 +24,3 @@ contract TokenERC20 is ERC20, AccessControl {
         _burn(from, amount);
     }
 }
-
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-// import "@openzeppelin/contracts/access/AccessControl.sol";
-
-// contract TokenERC20 is ERC20, AccessControl {
-//     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-
-//     address public admin;
-
-//     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
-//         // _grantRole(ADMIN_ROLE, msg.sender);
-//         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-//     }
-
-//     function updateAdmin(address newAdmin) external onlyRole(ADMIN_ROLE) {
-//         admin = newAdmin;
-//     }
-
-//     function mint(address to, uint256 amount) external onlyRole(ADMIN_ROLE) {
-//         _mint(to, amount);
-//     }
-
-//     function burn(address account, uint256 amount)
-//         external
-//         onlyRole(ADMIN_ROLE)
-//     {
-//         _burn(account, amount);
-//     }
-// }
