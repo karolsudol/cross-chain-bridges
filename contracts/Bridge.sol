@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./TokenERC20.sol";
+import "hardhat/console.sol";
 
 contract Bridge is Ownable, ReentrancyGuard {
     using ECDSA for bytes32;
@@ -59,7 +60,9 @@ contract Bridge is Ownable, ReentrancyGuard {
         uint256 _chainID,
         string memory _tokenSymbol
     ) external {
-        require(tokenSymbols[tokenSymbol] == true, "non supported erc20 token");
+        console.log(tokenSymbols[tokenSymbol]);
+
+        require(tokenSymbols[tokenSymbol], "non supported erc20 token");
         require(chainID == _chainID, "non supported chain");
 
         TokenERC20(token).burn(msg.sender, _amount);

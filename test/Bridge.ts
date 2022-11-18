@@ -122,7 +122,7 @@ describe("Bridge", function () {
       expect(await tokenBSC.balanceOf(acc2.address)).to.equal(500);
     });
 
-    it("Should revert swap and redeem correctly", async function () {
+    it.only("Should revert swap and redeem correctly", async function () {
       const {
         owner,
         validator,
@@ -149,7 +149,7 @@ describe("Bridge", function () {
       await tokenETH.connect(owner).grantRole(roleBurner, bridgeETH.address);
 
       await expect(
-        bridgeETH
+        await bridgeETH
           .connect(acc1)
           .swap(acc2.address, 500, 0, chainID_BSC, "falsSymbol")
       ).to.be.revertedWith("non supported erc20 token");
