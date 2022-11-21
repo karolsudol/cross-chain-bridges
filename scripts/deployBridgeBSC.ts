@@ -4,7 +4,7 @@ const OWNER_ADDRESS = process.env.OWNER_ADDRESS!;
 const VALIDATOR_ADDRESS: string = process.env.VALIDATOR_ADDRESS!;
 const TOKEN_BSC_ADDRESS: string = process.env.TOKEN_BSC_ADDRESS!;
 
-const chainID_ETH = 4;
+const chainID_ETH = 5;
 
 async function main() {
   console.log("Deploying bridge BSC contract with the account:", OWNER_ADDRESS);

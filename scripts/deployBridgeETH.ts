@@ -4,7 +4,7 @@ const OWNER_ADDRESS = process.env.OWNER_ADDRESS!;
 const VALIDATOR_ADDRESS: string = process.env.VALIDATOR_ADDRESS!;
 const TOKEN_ETH_ADDRESS: string = process.env.TOKEN_ETH_ADDRESS!;
 
-const chainID_BSC = 56;
+const chainID_BSC = 97;
 
 async function main() {
   console.log("Deploying ETH bridge contract with the account:", OWNER_ADDRESS);

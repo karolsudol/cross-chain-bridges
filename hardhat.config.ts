@@ -9,6 +9,7 @@ dotenv.config();
 
 const SEPOLIA_URL = `https://sepolia.infura.io/v3/${process.env.INFURA_KEY}`;
 const GOERLI_URL = `https://goerli.infura.io/v3/${process.env.INFURA_KEY}`;
+const BSC_TEST_URL = `https://data-seed-prebsc-1-s1.binance.org:8545/}`;
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -35,6 +36,15 @@ const config: HardhatUserConfig = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+    bsctestnet: {
+      url: BSC_TEST_URL || "",
+      allowUnlimitedContractSize: true,
+      chainId: 97,
+      gasPrice: 20000000000,
+
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
@@ -42,6 +52,7 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
+    // apiKey: process.env.BSCSCAN_API_KEY,
   },
 };
 
