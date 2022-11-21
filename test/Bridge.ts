@@ -27,9 +27,6 @@ describe("Bridge", function () {
       chainID_ETH
     );
 
-    // const roleAdmin = ethers.utils.keccak256(
-    //   ethers.utils.toUtf8Bytes("ADMIN_ROLE")
-    // );
     const roleMinter = ethers.utils.keccak256(
       ethers.utils.toUtf8Bytes("MINTER_ROLE")
     );
